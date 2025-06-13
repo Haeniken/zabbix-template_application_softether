@@ -1,4 +1,4 @@
-# Шаблон мониторинга SoftEther VPN для Zabbix
+# Шаблон мониторинга SoftEther VPN для Zabbix 7.2
 
 ## Обзор
 
