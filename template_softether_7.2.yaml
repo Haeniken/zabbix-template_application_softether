@@ -1,0 +1,82 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    - uuid: 7dd450f92f93448bbbc62e9a38afb999
+      template: 'SoftEther by Zabbix agent 2'
+      name: 'SoftEther by Zabbix agent 2'
+      groups:
+        - name: Templates/Applications
+      discovery_rules:
+        - uuid: 581c726267f54f44ba676af3b2cc013e
+          name: 'SoftEther Users Discovery'
+          key: softether.user.discovery
+          delay: 1h
+          item_prototypes:
+            - uuid: f0a73691deea43dfb57db8741b3f1526
+              name: 'SoftEther RX Speed for {#USERNAME}'
+              key: 'softether.rx_speed[{#USERNAME}]'
+              history: 7d
+              value_type: FLOAT
+              trends: 30d
+              units: Mbps
+            - uuid: b8bd10e9531e48d897aecd388e3c2b60
+              name: 'SoftEther TX Speed for {#USERNAME}'
+              key: 'softether.tx_speed[{#USERNAME}]'
+              history: 7d
+              value_type: FLOAT
+              trends: 30d
+              units: Mbps
+            - uuid: 3443966ba96d4ebfbeb0c9c61a938b12
+              name: 'SoftEther Inactivity Time for {#USERNAME}'
+              key: 'softether.user.inactivity[{#USERNAME}]'
+              delay: 1h
+              history: 7d
+              trends: 30d
+              units: s
+              trigger_prototypes:
+                - uuid: 92fbd3aa770541889afdf85d02d3c964
+                  expression: |
+                    (last(/SoftEther by Zabbix agent 2/softether.user.inactivity[{#USERNAME}])>21600
+                    and
+                    {#USERNAME} = "haeniken-tula")
+                  name: 'SoftEther: user {#USERNAME} has been inactive for more than 6 hours'
+                  priority: WARNING
+                - uuid: 2372bc479c7f457aa7d81f1d8d779de1
+                  expression: 'last(/SoftEther by Zabbix agent 2/softether.user.inactivity[{#USERNAME}])>7776000'
+                  name: 'SoftEther: user {#USERNAME} has been inactive for more than 90 days'
+          trigger_prototypes:
+            - uuid: df81813f80d74ea6bd0b07a970d1e2eb
+              expression: 'max(avg(/SoftEther by Zabbix agent 2/softether.rx_speed[{#USERNAME}],#5), avg(/SoftEther by Zabbix agent 2/softether.tx_speed[{#USERNAME}],#5)) > 20'
+              name: 'SoftEther: high continuous traffic for user {#USERNAME} (last 5m > {ITEM.VALUE})'
+              priority: WARNING
+            - uuid: c6d9cf0e9dd34029b0bfa36975cce5a7
+              expression: 'max(last(/SoftEther by Zabbix agent 2/softether.rx_speed[{#USERNAME}]), last(/SoftEther by Zabbix agent 2/softether.tx_speed[{#USERNAME}])) > 20'
+              name: 'SoftEther: high traffic for user {#USERNAME} (last 1m > {ITEM.VALUE})'
+              priority: INFO
+            - uuid: 1c2dec02d2224bf4b0f469364ec9ede5
+              expression: 'max(avg(/SoftEther by Zabbix agent 2/softether.rx_speed[{#USERNAME}],#5), avg(/SoftEther by Zabbix agent 2/softether.tx_speed[{#USERNAME}],#5)) > 100'
+              name: 'SoftEther: very high continuous traffic for user {#USERNAME} (last 5m > {ITEM.VALUE})'
+              priority: AVERAGE
+          graph_prototypes:
+            - uuid: ed04130a400a4363b75f484745e95d81
+              name: 'SoftEther Traffic for {#USERNAME}'
+              graph_items:
+                - color: 1A7C11
+                  calc_fnc: ALL
+                  item:
+                    host: 'SoftEther by Zabbix agent 2'
+                    key: 'softether.rx_speed[{#USERNAME}]'
+                - sortorder: '1'
+                  color: '274482'
+                  calc_fnc: ALL
+                  item:
+                    host: 'SoftEther by Zabbix agent 2'
+                    key: 'softether.tx_speed[{#USERNAME}]'
+      tags:
+        - tag: class
+          value: vpn
+        - tag: component
+          value: application
