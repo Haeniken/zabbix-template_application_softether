@@ -1,4 +1,4 @@
-# Zabbix Monitoring Template for SoftEther VPN
+# Zabbix 7.2 Monitoring Template for SoftEther VPN
 
 ## Overview
 
